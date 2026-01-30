@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Brain, User } from 'lucide-react';
+import { ProfileModal } from '../ui';
 
 interface HeaderProps {
   showAvatar?: boolean;
@@ -10,6 +11,7 @@ const Header: React.FC<HeaderProps> = ({
   showAvatar = false, 
   className = '' 
 }) => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   return (
     <header 
       className={`h-16 flex-shrink-0 bg-white border-b border-gray-200 shadow-sm ${className}`}
@@ -46,6 +48,7 @@ const Header: React.FC<HeaderProps> = ({
         {showAvatar && (
           <div className="flex items-center space-x-3 flex-shrink-0">
             <button
+              onClick={() => setIsProfileOpen(true)}
               className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               aria-label="User profile menu"
               type="button"
@@ -55,6 +58,9 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Profile Modal */}
+      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
     </header>
   );
 };
