@@ -10,12 +10,14 @@ function App() {
   const { formData, setFormData } = useFormState();
   const { recommendations, loading, error, generateRecommendations } = useRecommendations();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-4');
 
   const handleFormSubmit = async (data: AppFormData) => {
     setFormData(data);
     
     // Generate ML Pipeline automatically
     console.log('🚀 Generating ML Pipeline automatically...');
+    console.log('🤖 Using AI Model:', selectedModel);
     const pipeline = generatePipeline(data.projectDescription.description, data.projectDetails.useCaseType);
     console.log('Generated pipeline:', pipeline);
     
@@ -74,6 +76,8 @@ function App() {
   return (
     <Layout
       showAvatar={true}
+      selectedModel={selectedModel}
+      onModelChange={setSelectedModel}
       leftPanel={
         <div className="space-y-6">
           <InputForm 

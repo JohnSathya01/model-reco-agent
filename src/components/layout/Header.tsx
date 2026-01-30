@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { Brain, User } from 'lucide-react';
-import { ProfileModal } from '../ui';
+import { Brain, User, Settings } from 'lucide-react';
+import { ProfileModal, SettingsModal } from '../ui';
 
 interface HeaderProps {
   showAvatar?: boolean;
   className?: string;
+  selectedModel?: string;
+  onModelChange?: (model: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   showAvatar = false, 
-  className = '' 
+  className = '',
+  selectedModel = 'gpt-4',
+  onModelChange = () => {}
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   return (
     <header 
       className={`h-16 flex-shrink-0 bg-white border-b border-gray-200 shadow-sm ${className}`}
@@ -44,9 +49,20 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right side - Optional User Avatar */}
+        {/* Right side - Settings and User Avatar */}
         {showAvatar && (
-          <div className="flex items-center space-x-3 flex-shrink-0">
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            {/* Settings Button */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              aria-label="Settings"
+              type="button"
+            >
+              <Settings className="w-5 h-5 text-gray-600" aria-hidden="true" />
+            </button>
+
+            {/* Profile Button */}
             <button
               onClick={() => setIsProfileOpen(true)}
               className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -61,6 +77,14 @@ const Header: React.FC<HeaderProps> = ({
       
       {/* Profile Modal */}
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+      
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)}
+        selectedModel={selectedModel}
+        onModelChange={onModelChange}
+      />
     </header>
   );
 };

@@ -6,18 +6,26 @@ interface LayoutProps {
   rightPanel: React.ReactNode;
   showAvatar?: boolean;
   className?: string;
+  selectedModel?: string;
+  onModelChange?: (model: string) => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
   leftPanel,
   rightPanel,
   showAvatar = false,
-  className = ''
+  className = '',
+  selectedModel = 'gpt-4',
+  onModelChange = () => {}
 }) => {
   return (
     <div className={`h-screen flex flex-col bg-gray-50 overflow-hidden ${className}`}>
       {/* Fixed Header - 64px height */}
-      <Header showAvatar={showAvatar} />
+      <Header 
+        showAvatar={showAvatar} 
+        selectedModel={selectedModel}
+        onModelChange={onModelChange}
+      />
       
       {/* Main Content Area - Full height below header */}
       <main 
