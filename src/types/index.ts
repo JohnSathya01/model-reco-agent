@@ -1,6 +1,7 @@
 // Re-export all types for easy importing
 export * from './forms';
 export * from './recommendations';
+export * from './copilot';
 
 // UI component prop types
 export interface BaseComponentProps {

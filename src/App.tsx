@@ -2,15 +2,21 @@ import { useState } from 'react';
 import { Layout } from './components/layout';
 import { InputForm } from './components/forms';
 import { ResultsDashboard } from './components/dashboard';
+import { AICopilot } from './components/copilot';
+import { Toast } from './components/ui/Toast';
 import { useFormState, useRecommendations } from './hooks';
 import { generatePipeline } from './utils/pipelineGenerator';
-import type { FormData as AppFormData, ActivityLogEntry } from './types';
+import { applyChanges } from './utils/copilotEngine';
+import type { FormData as AppFormData, ActivityLogEntry, ProposedChange, TabContext } from './types';
 
 function App() {
   const { formData, setFormData } = useFormState();
   const { recommendations, loading, error, generateRecommendations } = useRecommendations();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4');
+  const [activeTab, setActiveTab] = useState<TabContext>('overview');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   const handleFormSubmit = async (data: AppFormData) => {
     setFormData(data);
@@ -73,29 +79,76 @@ function App() {
     }
   };
 
+  const handleApplyChanges = (change: ProposedChange) => {
+    // Apply changes using the copilot engine
+    const result = applyChanges(change, formData, recommendations);
+    
+    // Add activity log entry
+    const newActivity: ActivityLogEntry = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      userAction: 'AI Copilot Change',
+      inputSummary: change.description,
+      recommendationSummary: result.summary,
+      costEstimate: change.impact.cost || 'N/A',
+      exportStatus: 'completed'
+    };
+    
+    setActivityLog(prev => [newActivity, ...prev]);
+    
+    // Show toast notification
+    setToastMessage('Changes applied successfully');
+    setShowToast(true);
+    
+    // In a real implementation, you would update formData and recommendations here
+    // For now, we just log the activity
+  };
+
   return (
-    <Layout
-      showAvatar={true}
-      selectedModel={selectedModel}
-      onModelChange={setSelectedModel}
-      leftPanel={
-        <div className="space-y-6">
-          <InputForm 
-            onSubmit={handleFormSubmit}
-            loading={loading}
-          />
-        </div>
-      }
-      rightPanel={
-        <ResultsDashboard
-          recommendations={recommendations}
-          formData={formData}
-          loading={loading}
-          error={error}
-          activityLog={activityLog}
+    <>
+      <Layout
+        showAvatar={true}
+        selectedModel={selectedModel}
+        onModelChange={setSelectedModel}
+        leftPanel={
+          <div className="space-y-6">
+            <InputForm 
+              onSubmit={handleFormSubmit}
+              loading={loading}
+            />
+          </div>
+        }
+        rightPanel={
+          <>
+            <ResultsDashboard
+              recommendations={recommendations}
+              formData={formData}
+              loading={loading}
+              error={error}
+              activityLog={activityLog}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+            <AICopilot
+              context={{
+                activeTab,
+                formData,
+                recommendations,
+                activityLog
+              }}
+              onApplyChanges={handleApplyChanges}
+              isVisible={!!(recommendations !== null || (formData?.projectDescription?.generatedPipeline && formData.projectDescription.generatedPipeline.length > 0))}
+            />
+          </>
+        }
+      />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setShowToast(false)}
         />
-      }
-    />
+      )}
+    </>
   );
 }
 

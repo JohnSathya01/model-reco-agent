@@ -5,13 +5,11 @@ import {
   AlternativesTable,
   FinetuningStrategyCard,
   ComputeCostCard,
-  DecisionRationaleCard,
   ConfigurationExportCard,
-  ArchitectureCard,
   RiskAnalysisCard,
-  CostBreakdownCard,
   InstanceRecommendationsCard,
-  ActivityLogCard
+  ActivityLogCard,
+  CostCalculator
 } from './index';
 import PipelineTab from './PipelineTab';
 import APITab from './APITab';
@@ -23,6 +21,8 @@ interface ResultsDashboardProps {
   loading: boolean;
   error: string | null;
   activityLog?: ActivityLogEntry[];
+  activeTab?: 'overview' | 'pipeline' | 'analysis' | 'api' | 'activity';
+  onTabChange?: (tab: 'overview' | 'pipeline' | 'analysis' | 'api' | 'activity') => void;
   className?: string;
 }
 
@@ -32,9 +32,15 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   loading,
   error,
   activityLog = [],
+  activeTab: externalActiveTab,
+  onTabChange,
   className = ''
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api' | 'activity'>('overview');
+  const [internalActiveTab, setInternalActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api' | 'activity'>('overview');
+  
+  // Use external tab if provided, otherwise use internal state
+  const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
+  const setActiveTab = onTabChange || setInternalActiveTab;
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -104,7 +110,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     if (hasGeneratedPipeline) {
       // Show tabs with Pipeline tab available
       return (
-        <div className={`space-y-6 ${className}`}>
+        <div className={`space-y-6 min-h-screen ${className}`}>
           {/* Tab Navigation */}
           <div className="bg-white rounded-lg border border-gray-200 p-1">
             <nav className="flex space-x-1">
@@ -203,7 +209,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
   // Results state with multi-tab interface
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-6 min-h-screen bg-gray-50 ${className}`}>
       {/* Tab Navigation */}
       <div className="bg-white rounded-lg border border-gray-200 p-1">
         <nav className="flex space-x-1">
@@ -250,9 +256,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <ComputeCostCard estimate={recommendations.computeEstimate} />
           </div>
 
-          {/* Decision Rationale */}
+          {/* Cost Calculator */}
+          <div className="animate-fadeIn" style={{ animationDelay: '0.35s' }}>
+            <CostCalculator />
+          </div>
+
+          {/* Instance Recommendations */}
           <div className="animate-fadeIn" style={{ animationDelay: '0.4s' }}>
-            <DecisionRationaleCard rationale={recommendations.rationale} />
+            <InstanceRecommendationsCard instances={recommendations.instanceRecommendations} />
           </div>
 
           {/* Configuration Export */}
@@ -278,24 +289,9 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
       {activeTab === 'analysis' && (
         <div className="space-y-6">
-          {/* Architecture Recommendations */}
-          <div className="animate-fadeIn">
-            <ArchitectureCard architecture={recommendations.architecture} />
-          </div>
-
           {/* Risk Analysis */}
-          <div className="animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+          <div className="animate-fadeIn">
             <RiskAnalysisCard riskAnalysis={recommendations.riskAnalysis} />
-          </div>
-
-          {/* Cost Breakdown */}
-          <div className="animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-            <CostBreakdownCard costBreakdown={recommendations.costBreakdown} />
-          </div>
-
-          {/* Instance Recommendations */}
-          <div className="animate-fadeIn" style={{ animationDelay: '0.3s' }}>
-            <InstanceRecommendationsCard instances={recommendations.instanceRecommendations} />
           </div>
         </div>
       )}

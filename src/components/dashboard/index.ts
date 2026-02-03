@@ -12,3 +12,4 @@ export { default as ActivityLogCard } from './ActivityLogCard';
 export { default as PipelineTab } from './PipelineTab';
 export { default as APITab } from './APITab';
 export { default as ResultsDashboard } from './ResultsDashboard';
+export { CostCalculator } from './CostCalculator';
