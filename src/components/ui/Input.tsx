@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
 import type { InputProps } from '../../types';
+import Tooltip from './Tooltip';
 
-const Input = forwardRef<HTMLInputElement, InputProps>(({
+const Input = forwardRef<HTMLInputElement, InputProps & { tooltip?: string }>(({
   label,
   name,
   type = 'text',
@@ -9,6 +10,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   required = false,
   error,
   className = '',
+  tooltip,
   ...props
 }, ref) => {
   const inputClasses = `
@@ -23,9 +25,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
 
   return (
     <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+        <span>
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </span>
+        {tooltip && <Tooltip content={tooltip} />}
       </label>
       <input
         ref={ref}

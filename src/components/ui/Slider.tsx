@@ -1,5 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import type { SliderProps } from '../../types';
+import Tooltip from './Tooltip';
 
 interface SliderInputProps extends Omit<SliderProps, 'name' | 'min' | 'max'> {
   defaultValue?: number;
@@ -8,6 +9,7 @@ interface SliderInputProps extends Omit<SliderProps, 'name' | 'min' | 'max'> {
   name?: string;
   min: number;
   max: number;
+  tooltip?: string;
 }
 
 const Slider = forwardRef<HTMLInputElement, SliderInputProps>(({
@@ -20,6 +22,7 @@ const Slider = forwardRef<HTMLInputElement, SliderInputProps>(({
   required = false,
   error,
   className = '',
+  tooltip,
   onBlur,
   ...props
 }, ref) => {
@@ -50,9 +53,12 @@ const Slider = forwardRef<HTMLInputElement, SliderInputProps>(({
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+          <span>
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+          </span>
+          {tooltip && <Tooltip content={tooltip} />}
         </label>
         <span 
           className="text-sm font-medium text-gray-900"

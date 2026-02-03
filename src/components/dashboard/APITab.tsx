@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Copy, Check, Code, Globe, Shield, Zap, ArrowRight } from 'lucide-react';
+import { Copy, Check, Code, Globe, Shield, Zap, ArrowRight, Download } from 'lucide-react';
 import type { APISpecification, APIEndpoint } from '../../utils/apiGenerator';
+import yaml from 'js-yaml';
 
 interface APITabProps {
   apiSpec: APISpecification;
@@ -18,6 +19,84 @@ const APITab: React.FC<APITabProps> = ({
     navigator.clipboard.writeText(text);
     setCopiedEndpoint(id);
     setTimeout(() => setCopiedEndpoint(null), 2000);
+  };
+
+  const downloadAPISpec = (format: 'json' | 'yaml') => {
+    const spec = {
+      openapi: '3.0.0',
+      info: {
+        title: 'ML Model Inference API',
+        version: apiSpec.version,
+        description: 'REST API for machine learning model inference'
+      },
+      servers: [
+        {
+          url: apiSpec.baseUrl,
+          description: 'Production server'
+        }
+      ],
+      paths: apiSpec.endpoints.reduce((acc, endpoint) => {
+        acc[endpoint.path] = {
+          [endpoint.method.toLowerCase()]: {
+            summary: endpoint.description,
+            security: [{ bearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                [endpoint.request.contentType]: {
+                  schema: endpoint.request.schema,
+                  example: endpoint.request.example
+                }
+              }
+            },
+            responses: {
+              '200': {
+                description: 'Successful response',
+                content: {
+                  [endpoint.response.contentType]: {
+                    schema: endpoint.response.schema,
+                    example: endpoint.response.example
+                  }
+                }
+              }
+            }
+          }
+        };
+        return acc;
+      }, {} as any),
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer'
+          }
+        }
+      }
+    };
+
+    let content: string;
+    let filename: string;
+    let mimeType: string;
+
+    if (format === 'json') {
+      content = JSON.stringify(spec, null, 2);
+      filename = `api-spec-${Date.now()}.json`;
+      mimeType = 'application/json';
+    } else {
+      content = yaml.dump(spec);
+      filename = `api-spec-${Date.now()}.yaml`;
+      mimeType = 'application/x-yaml';
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const generateCurlCommand = (endpoint: APIEndpoint) => {
@@ -95,8 +174,24 @@ const APITab: React.FC<APITabProps> = ({
 
       {/* Endpoints List */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="border-b border-gray-200 p-4">
+        <div className="border-b border-gray-200 p-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Available Endpoints</h3>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => downloadAPISpec('json')}
+              className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+            >
+              <Download className="w-4 h-4" />
+              <span>JSON</span>
+            </button>
+            <button
+              onClick={() => downloadAPISpec('yaml')}
+              className="flex items-center space-x-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium"
+            >
+              <Download className="w-4 h-4" />
+              <span>YAML</span>
+            </button>
+          </div>
         </div>
         <div className="divide-y divide-gray-200">
           {apiSpec.endpoints.map((endpoint, index) => (
@@ -194,7 +289,25 @@ const APITab: React.FC<APITabProps> = ({
             
             <div className="space-y-4">
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Schema</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-medium text-gray-700">Schema</div>
+                  <button
+                    onClick={() => copyToClipboard(JSON.stringify(selectedEndpoint.request.schema, null, 2), 'request-schema')}
+                    className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    {copiedEndpoint === 'request-schema' ? (
+                      <>
+                        <Check className="w-3 h-3 text-green-600" />
+                        <span className="text-xs text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs text-gray-600">Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-green-400 font-mono">
                     {JSON.stringify(selectedEndpoint.request.schema, null, 2)}
@@ -203,7 +316,25 @@ const APITab: React.FC<APITabProps> = ({
               </div>
 
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Example</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-medium text-gray-700">Example</div>
+                  <button
+                    onClick={() => copyToClipboard(JSON.stringify(selectedEndpoint.request.example, null, 2), 'request-example')}
+                    className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    {copiedEndpoint === 'request-example' ? (
+                      <>
+                        <Check className="w-3 h-3 text-green-600" />
+                        <span className="text-xs text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs text-gray-600">Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-blue-400 font-mono">
                     {JSON.stringify(selectedEndpoint.request.example, null, 2)}
@@ -222,7 +353,25 @@ const APITab: React.FC<APITabProps> = ({
             
             <div className="space-y-4">
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Schema</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-medium text-gray-700">Schema</div>
+                  <button
+                    onClick={() => copyToClipboard(JSON.stringify(selectedEndpoint.response.schema, null, 2), 'response-schema')}
+                    className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    {copiedEndpoint === 'response-schema' ? (
+                      <>
+                        <Check className="w-3 h-3 text-green-600" />
+                        <span className="text-xs text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs text-gray-600">Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-green-400 font-mono">
                     {JSON.stringify(selectedEndpoint.response.schema, null, 2)}
@@ -231,7 +380,25 @@ const APITab: React.FC<APITabProps> = ({
               </div>
 
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Example</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-medium text-gray-700">Example</div>
+                  <button
+                    onClick={() => copyToClipboard(JSON.stringify(selectedEndpoint.response.example, null, 2), 'response-example')}
+                    className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    {copiedEndpoint === 'response-example' ? (
+                      <>
+                        <Check className="w-3 h-3 text-green-600" />
+                        <span className="text-xs text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-gray-500" />
+                        <span className="text-xs text-gray-600">Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                   <pre className="text-sm text-purple-400 font-mono">
                     {JSON.stringify(selectedEndpoint.response.example, null, 2)}

@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from './Header';
+import type { ActivityLogEntry } from '../../types';
 
 interface LayoutProps {
   leftPanel: React.ReactNode;
@@ -8,6 +9,7 @@ interface LayoutProps {
   className?: string;
   selectedModel?: string;
   onModelChange?: (model: string) => void;
+  activityLog?: ActivityLogEntry[];
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -16,7 +18,8 @@ const Layout: React.FC<LayoutProps> = ({
   showAvatar = false,
   className = '',
   selectedModel = 'gpt-4',
-  onModelChange = () => {}
+  onModelChange = () => {},
+  activityLog = []
 }) => {
   return (
     <div className={`h-screen flex flex-col bg-gray-50 overflow-hidden ${className}`}>
@@ -25,6 +28,7 @@ const Layout: React.FC<LayoutProps> = ({
         showAvatar={showAvatar} 
         selectedModel={selectedModel}
         onModelChange={onModelChange}
+        activityLog={activityLog}
       />
       
       {/* Main Content Area - Full height below header */}

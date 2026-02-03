@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { Brain, User, Settings } from 'lucide-react';
 import { ProfileModal, SettingsModal } from '../ui';
+import type { ActivityLogEntry } from '../../types';
 
 interface HeaderProps {
   showAvatar?: boolean;
   className?: string;
   selectedModel?: string;
   onModelChange?: (model: string) => void;
+  activityLog?: ActivityLogEntry[];
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   showAvatar = false, 
   className = '',
   selectedModel = 'gpt-4',
-  onModelChange = () => {}
+  onModelChange = () => {},
+  activityLog = []
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -76,7 +79,11 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       {/* Profile Modal */}
-      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+      <ProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)}
+        activityLog={activityLog}
+      />
       
       {/* Settings Modal */}
       <SettingsModal 

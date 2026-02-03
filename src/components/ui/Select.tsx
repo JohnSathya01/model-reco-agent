@@ -1,8 +1,9 @@
 import { forwardRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { SelectProps } from '../../types';
+import Tooltip from './Tooltip';
 
-const Select = forwardRef<HTMLSelectElement, SelectProps>(({
+const Select = forwardRef<HTMLSelectElement, SelectProps & { tooltip?: string }>(({
   label,
   name,
   options,
@@ -10,6 +11,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   required = false,
   error,
   className = '',
+  tooltip,
   ...props
 }, ref) => {
   const selectClasses = `
@@ -25,9 +27,12 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({
 
   return (
     <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+        <span>
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </span>
+        {tooltip && <Tooltip content={tooltip} />}
       </label>
       <div className="relative">
         <select

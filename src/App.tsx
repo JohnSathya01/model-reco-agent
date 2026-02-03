@@ -7,14 +7,14 @@ import { Toast } from './components/ui/Toast';
 import { useFormState, useRecommendations } from './hooks';
 import { generatePipeline } from './utils/pipelineGenerator';
 import { applyChanges } from './utils/copilotEngine';
-import type { FormData as AppFormData, ActivityLogEntry, ProposedChange, TabContext } from './types';
+import type { FormData as AppFormData, ActivityLogEntry, ProposedChange } from './types';
 
 function App() {
   const { formData, setFormData } = useFormState();
   const { recommendations, loading, error, generateRecommendations } = useRecommendations();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4');
-  const [activeTab, setActiveTab] = useState<TabContext>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
@@ -110,6 +110,7 @@ function App() {
         showAvatar={true}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
+        activityLog={activityLog}
         leftPanel={
           <div className="space-y-6">
             <InputForm 
@@ -125,7 +126,6 @@ function App() {
               formData={formData}
               loading={loading}
               error={error}
-              activityLog={activityLog}
               activeTab={activeTab}
               onTabChange={setActiveTab}
             />

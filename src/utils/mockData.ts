@@ -651,6 +651,7 @@ export const generateMockRecommendation = (formData?: Partial<AppFormData>): Rec
       memoryLimit: 4
     },
     costSimulation: {
+      workloadType: 'both',
       trainingHoursPerMonth: 100,
       inferenceHoursPerDay: 24,
       requestsPerSecond: 10,

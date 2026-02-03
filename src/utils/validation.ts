@@ -52,14 +52,28 @@ const constraintsSchema = z.object({
   accuracyTarget: z.number().min(70).max(99).optional()
 });
 
-// Cost simulation schema
+// Cost simulation schema with conditional validation
 const costSimulationSchema = z.object({
-  trainingHoursPerMonth: z.number().min(1, 'Training hours must be at least 1'),
-  inferenceHoursPerDay: z.number().min(1, 'Inference hours must be at least 1'),
+  workloadType: z.enum(['both', 'training-only', 'inference-only']),
+  trainingHoursPerMonth: z.number().min(1, 'Training hours must be at least 1').optional(),
+  inferenceHoursPerDay: z.number().min(1, 'Inference hours must be at least 1').optional(),
   requestsPerSecond: z.number().min(1, 'RPS must be at least 1'),
   storageSize: z.number().min(1, 'Storage size must be at least 1'),
   dataTransfer: z.number().min(0, 'Data transfer cannot be negative'),
   environments: z.number().min(1, 'Must have at least 1 environment')
+}).refine((data) => {
+  // If workloadType is 'both' or 'training-only', trainingHoursPerMonth is required
+  if ((data.workloadType === 'both' || data.workloadType === 'training-only') && !data.trainingHoursPerMonth) {
+    return false;
+  }
+  // If workloadType is 'both' or 'inference-only', inferenceHoursPerDay is required
+  if ((data.workloadType === 'both' || data.workloadType === 'inference-only') && !data.inferenceHoursPerDay) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Please provide the required hours based on your workload type',
+  path: ['workloadType']
 });
 
 // Main form schema with conditional validation

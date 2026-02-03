@@ -3,6 +3,7 @@ import { Download, Maximize2, Info } from 'lucide-react';
 import ArchitectureFlow from '../pipeline/ArchitectureFlow';
 import NodeDetailsPanel from '../pipeline/NodeDetailsPanel';
 import PipelineVisualization from '../pipeline/PipelineVisualization';
+import { CostCalculator } from './CostCalculator';
 import type { ArchitecturePipeline, PipelineNode } from '../../utils/architectureGenerator';
 import type { FormData } from '../../types';
 
@@ -207,25 +208,9 @@ const PipelineTab: React.FC<PipelineTabProps> = ({
             </div>
           </div>
 
-          {/* Cost Summary */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Estimated Monthly Costs</h3>
-            <div className="space-y-3">
-              {pipeline!.nodes
-                .filter(n => n.costPerHour && n.costPerHour !== 'Included')
-                .map((node, index) => (
-                  <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-xl">{node.icon}</span>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{node.label}</div>
-                        <div className="text-xs text-gray-500">{node.service}</div>
-                      </div>
-                    </div>
-                    <div className="text-sm font-semibold text-blue-600">{node.costPerHour}</div>
-                  </div>
-                ))}
-            </div>
+          {/* AWS Cost Calculator */}
+          <div className="animate-fadeIn">
+            <CostCalculator />
           </div>
 
           {/* Node Details Panel */}

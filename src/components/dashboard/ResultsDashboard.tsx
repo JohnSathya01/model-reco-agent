@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, BarChart3, Settings, Activity, GitBranch, Code } from 'lucide-react';
+import { AlertCircle, Loader2, BarChart3, Settings, GitBranch, Code } from 'lucide-react';
 import {
   RecommendedModelCard,
   AlternativesTable,
@@ -7,22 +7,19 @@ import {
   ComputeCostCard,
   ConfigurationExportCard,
   RiskAnalysisCard,
-  InstanceRecommendationsCard,
-  ActivityLogCard,
-  CostCalculator
+  InstanceRecommendationsCard
 } from './index';
 import PipelineTab from './PipelineTab';
 import APITab from './APITab';
-import type { RecommendationResult, FormData as AppFormData, ActivityLogEntry } from '../../types';
+import type { RecommendationResult, FormData as AppFormData } from '../../types';
 
 interface ResultsDashboardProps {
   recommendations: RecommendationResult | null;
   formData: AppFormData | null;
   loading: boolean;
   error: string | null;
-  activityLog?: ActivityLogEntry[];
-  activeTab?: 'overview' | 'pipeline' | 'analysis' | 'api' | 'activity';
-  onTabChange?: (tab: 'overview' | 'pipeline' | 'analysis' | 'api' | 'activity') => void;
+  activeTab?: 'overview' | 'pipeline' | 'analysis' | 'api';
+  onTabChange?: (tab: 'overview' | 'pipeline' | 'analysis' | 'api') => void;
   className?: string;
 }
 
@@ -31,12 +28,11 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   formData,
   loading,
   error,
-  activityLog = [],
   activeTab: externalActiveTab,
   onTabChange,
   className = ''
 }) => {
-  const [internalActiveTab, setInternalActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api' | 'activity'>('overview');
+  const [internalActiveTab, setInternalActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
   
   // Use external tab if provided, otherwise use internal state
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
@@ -46,8 +42,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'pipeline', label: 'Pipeline', icon: GitBranch },
     { id: 'analysis', label: 'Analysis', icon: Settings },
-    { id: 'api', label: 'API', icon: Code },
-    { id: 'activity', label: 'Activity', icon: Activity }
+    { id: 'api', label: 'API', icon: Code }
   ];
   // Loading state
   if (loading) {
@@ -256,11 +251,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <ComputeCostCard estimate={recommendations.computeEstimate} />
           </div>
 
-          {/* Cost Calculator */}
-          <div className="animate-fadeIn" style={{ animationDelay: '0.35s' }}>
-            <CostCalculator />
-          </div>
-
           {/* Instance Recommendations */}
           <div className="animate-fadeIn" style={{ animationDelay: '0.4s' }}>
             <InstanceRecommendationsCard instances={recommendations.instanceRecommendations} />
@@ -299,12 +289,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       {activeTab === 'api' && (
         <div className="animate-fadeIn">
           <APITab apiSpec={recommendations.apiSpecification} />
-        </div>
-      )}
-
-      {activeTab === 'activity' && (
-        <div className="animate-fadeIn">
-          <ActivityLogCard activities={activityLog} />
         </div>
       )}
     </div>

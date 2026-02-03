@@ -16,6 +16,7 @@ interface DynamicFormProps {
   register: UseFormRegister<FormData>;
   errors: FieldErrors<FormData>;
   useCaseType?: 'CV' | 'LLM';
+  workloadType?: 'both' | 'training-only' | 'inference-only';
   className?: string;
 }
 
@@ -23,6 +24,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   register,
   errors,
   useCaseType,
+  workloadType = 'both',
   className = ''
 }) => {
   const getTaskOptions = () => {
@@ -54,6 +56,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               options={USE_CASE_OPTIONS}
               placeholder="Select use case type"
               required
+              tooltip="Choose between Computer Vision (CV) for image/video tasks or Large Language Model (LLM) for text-based tasks"
               error={errors.projectDetails?.useCaseType?.message}
               {...register('projectDetails.useCaseType')}
             />
@@ -63,6 +66,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               options={getTaskOptions()}
               placeholder="Select task type"
               required
+              tooltip="Specific AI task you want to accomplish (e.g., Classification, Detection, Chat, Summarization)"
               error={errors.projectDetails?.taskType?.message}
               {...register('projectDetails.taskType')}
             />
@@ -92,6 +96,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 type="number"
                 placeholder="Number of samples"
                 required
+                tooltip="Total number of images or samples in your training dataset (e.g., 10,000 images)"
                 error={errors.dataset?.size?.message}
                 {...register('dataset.size', { valueAsNumber: true })}
               />
@@ -101,6 +106,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 options={FORMAT_OPTIONS}
                 placeholder="Select format"
                 required
+                tooltip="Primary format of your data: Images (JPEG/PNG), Video (MP4), Text, or Mixed"
                 error={errors.dataset?.format?.message}
                 {...register('dataset.format')}
               />
@@ -112,6 +118,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 options={QUALITY_OPTIONS}
                 placeholder="Select quality"
                 required
+                tooltip="Quality of your dataset annotations: High (professional), Medium (crowdsourced), Low (automated)"
                 error={errors.dataset?.labelQuality?.message}
                 {...register('dataset.labelQuality')}
               />
@@ -119,6 +126,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <Input
                 label="Image Resolution"
                 placeholder="e.g., 1920x1080"
+                tooltip="Typical resolution of your images (e.g., 1920x1080, 640x480). Higher resolution requires more compute"
                 error={errors.dataset?.resolution?.message}
                 {...register('dataset.resolution')}
               />
@@ -129,6 +137,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 label="Augmentation Level"
                 options={AUGMENTATION_OPTIONS}
                 placeholder="Select augmentation"
+                tooltip="Data augmentation strategy: None (use as-is), Basic (flip/rotate), Advanced (complex transformations)"
                 error={errors.dataset?.augmentationLevel?.message}
                 {...register('dataset.augmentationLevel')}
               />
@@ -137,6 +146,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 label="FPS Requirement"
                 type="number"
                 placeholder="Frames per second"
+                tooltip="Required processing speed for video tasks (e.g., 30 FPS for real-time, 1 FPS for batch processing)"
                 error={errors.dataset?.fpsRequirement?.message}
                 {...register('dataset.fpsRequirement', { valueAsNumber: true })}
               />
@@ -158,6 +168,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       step={1}
                       unit="%"
                       required
+                      tooltip="Minimum acceptable model accuracy. Higher accuracy typically requires more complex models and training time"
                       error={errors.constraints?.targetAccuracy?.message}
                       onChange={onChange}
                       onBlur={onBlur}
@@ -172,6 +183,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 type="number"
                 placeholder="Milliseconds"
                 required
+                tooltip="Maximum acceptable response time in milliseconds (e.g., 100ms for real-time, 1000ms for batch)"
                 error={errors.constraints?.latencyRequirement?.message}
                 {...register('constraints.latencyRequirement', { valueAsNumber: true })}
               />
@@ -183,6 +195,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 options={BUDGET_OPTIONS}
                 placeholder="Select budget"
                 required
+                tooltip="Your budget constraint: Low (<$1k/month), Moderate ($1k-$10k/month), High (>$10k/month)"
                 error={errors.constraints?.budgetLevel?.message}
                 {...register('constraints.budgetLevel')}
               />
@@ -192,6 +205,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 type="number"
                 placeholder="GB"
                 required
+                tooltip="Maximum GPU/system memory available for model inference in gigabytes (e.g., 8GB, 16GB)"
                 error={errors.constraints?.memoryLimit?.message}
                 {...register('constraints.memoryLimit', { valueAsNumber: true })}
               />
@@ -222,6 +236,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 type="number"
                 placeholder="Maximum tokens"
                 required
+                tooltip="Maximum number of tokens the model can process at once (e.g., 2048, 4096, 8192). Longer context = higher cost"
                 error={errors.constraints?.contextLength?.message}
                 {...register('constraints.contextLength', { valueAsNumber: true })}
               />
@@ -231,6 +246,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 type="number"
                 placeholder="Average tokens"
                 required
+                tooltip="Average number of tokens per API request (input + output). Used for cost estimation"
                 error={errors.constraints?.tokensPerRequest?.message}
                 {...register('constraints.tokensPerRequest', { valueAsNumber: true })}
               />
@@ -242,6 +258,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 type="number"
                 placeholder="Number of users"
                 required
+                tooltip="Expected number of simultaneous users. Affects infrastructure sizing and scaling requirements"
                 error={errors.constraints?.concurrentUsers?.message}
                 {...register('constraints.concurrentUsers', { valueAsNumber: true })}
               />
@@ -261,6 +278,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       step={1}
                       unit="%"
                       required
+                      tooltip="Minimum acceptable model performance. Higher targets may require larger, more expensive models"
                       error={errors.constraints?.accuracyTarget?.message}
                       onChange={onChange}
                       onBlur={onBlur}
@@ -277,6 +295,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 options={BUDGET_OPTIONS}
                 placeholder="Select budget"
                 required
+                tooltip="Your budget constraint: Low (<$1k/month), Moderate ($1k-$10k/month), High (>$10k/month)"
                 error={errors.constraints?.budgetLevel?.message}
                 {...register('constraints.budgetLevel')}
               />
@@ -300,25 +319,68 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         </div>
         
         <div className="form-section">
-          <div className="form-grid">
-            <Input
-              label="Training Hours per Month"
-              type="number"
-              placeholder="Hours"
-              required
-              error={errors.costSimulation?.trainingHoursPerMonth?.message}
-              {...register('costSimulation.trainingHoursPerMonth', { valueAsNumber: true })}
-            />
-
-            <Input
-              label="Inference Hours per Day"
-              type="number"
-              placeholder="Hours"
-              required
-              error={errors.costSimulation?.inferenceHoursPerDay?.message}
-              {...register('costSimulation.inferenceHoursPerDay', { valueAsNumber: true })}
-            />
+          {/* Workload Type Selector */}
+          <div className="mb-6">
+            <label htmlFor="workloadType" className="block text-sm font-medium text-gray-700 mb-1">
+              Workload Type
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <select
+              id="workloadType"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              {...register('costSimulation.workloadType')}
+            >
+              <option value="both">Training & Inference</option>
+              <option value="training-only">Training Only</option>
+              <option value="inference-only">Inference Only</option>
+            </select>
+            {errors.costSimulation?.workloadType && (
+              <p className="text-sm text-red-600 mt-1">{errors.costSimulation.workloadType.message}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Choose whether you need training, inference, or both for your project
+            </p>
           </div>
+
+          {/* Conditional Training/Inference Fields */}
+          {(workloadType === 'both' || workloadType === 'training-only') && (
+            <div className="form-grid mb-4">
+              <Input
+                label="Training Hours per Month"
+                type="number"
+                placeholder="Hours"
+                required
+                tooltip="Expected monthly training hours. Used to estimate training compute costs (e.g., 100 hours/month)"
+                error={errors.costSimulation?.trainingHoursPerMonth?.message}
+                {...register('costSimulation.trainingHoursPerMonth', { valueAsNumber: true })}
+              />
+              {workloadType === 'both' && (
+                <Input
+                  label="Inference Hours per Day"
+                  type="number"
+                  placeholder="Hours"
+                  required
+                  tooltip="Hours per day the model will serve predictions. 24 = always-on service"
+                  error={errors.costSimulation?.inferenceHoursPerDay?.message}
+                  {...register('costSimulation.inferenceHoursPerDay', { valueAsNumber: true })}
+                />
+              )}
+            </div>
+          )}
+
+          {workloadType === 'inference-only' && (
+            <div className="form-grid mb-4">
+              <Input
+                label="Inference Hours per Day"
+                type="number"
+                placeholder="Hours"
+                required
+                tooltip="Hours per day the model will serve predictions. 24 = always-on service"
+                error={errors.costSimulation?.inferenceHoursPerDay?.message}
+                {...register('costSimulation.inferenceHoursPerDay', { valueAsNumber: true })}
+              />
+            </div>
+          )}
 
           <div className="form-grid">
             <Input
@@ -326,6 +388,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               type="number"
               placeholder="RPS"
               required
+              tooltip="Expected API requests per second at peak load. Affects instance sizing and auto-scaling configuration"
               error={errors.costSimulation?.requestsPerSecond?.message}
               {...register('costSimulation.requestsPerSecond', { valueAsNumber: true })}
             />
@@ -335,6 +398,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               type="number"
               placeholder="GB"
               required
+              tooltip="Total storage needed for models, datasets, and logs in gigabytes (e.g., 100GB)"
               error={errors.costSimulation?.storageSize?.message}
               {...register('costSimulation.storageSize', { valueAsNumber: true })}
             />
@@ -346,6 +410,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               type="number"
               placeholder="GB per month"
               required
+              tooltip="Expected monthly data transfer (ingress + egress) in gigabytes. Affects bandwidth costs"
               error={errors.costSimulation?.dataTransfer?.message}
               {...register('costSimulation.dataTransfer', { valueAsNumber: true })}
             />
@@ -355,6 +420,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               type="number"
               placeholder="Dev/QA/Prod"
               required
+              tooltip="Number of deployment environments (e.g., 3 for Dev/QA/Prod). Each environment incurs separate costs"
               error={errors.costSimulation?.environments?.message}
               {...register('costSimulation.environments', { valueAsNumber: true })}
             />

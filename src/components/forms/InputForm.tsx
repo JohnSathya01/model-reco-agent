@@ -56,6 +56,7 @@ const InputForm: React.FC<InputFormProps> = ({
         accuracyTarget: 90
       },
       costSimulation: {
+        workloadType: 'both',
         trainingHoursPerMonth: 100,
         inferenceHoursPerDay: 24,
         requestsPerSecond: 10,
@@ -69,6 +70,7 @@ const InputForm: React.FC<InputFormProps> = ({
   const watchedUseCaseType = watch('projectDetails.useCaseType');
   const watchedProjectDescription = watch('projectDescription');
   const watchedDeploymentPlatform = watch('projectDetails.deploymentPlatform');
+  const watchedWorkloadType = watch('costSimulation.workloadType');
 
   const handleFormSubmit = (data: FormData) => {
     onSubmit(data);
@@ -105,6 +107,7 @@ const InputForm: React.FC<InputFormProps> = ({
             register={register} 
             errors={errors}
             useCaseType={watchedUseCaseType}
+            workloadType={watchedWorkloadType}
           />
         </div>
       </div>

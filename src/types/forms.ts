@@ -47,13 +47,16 @@ export interface PipelineStep {
 }
 
 export interface CostSimulation {
-  trainingHoursPerMonth: number;
-  inferenceHoursPerDay: number;
+  workloadType: 'both' | 'training-only' | 'inference-only';
+  trainingHoursPerMonth?: number;
+  inferenceHoursPerDay?: number;
   requestsPerSecond: number;
   storageSize: number;
   dataTransfer: number;
   environments: number;
 }
+
+export const WORKLOAD_TYPE_OPTIONS = ['both', 'training-only', 'inference-only'] as const;
 
 export interface FormData {
   projectDescription: ProjectDescription;
