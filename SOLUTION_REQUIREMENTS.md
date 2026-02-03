@@ -2,8 +2,8 @@
 ## Intelligent Model Recommendation Agent
 
 **Project Name**: Intelligent Model Recommendation Agent  
-**Version**: 1.0  
-**Date**: January 30, 2026  
+**Version**: 1.2  
+**Date**: February 3, 2026  
 **Status**: Production Ready  
 **Document Owner**: John Sathya
 
@@ -109,17 +109,25 @@ Create an intelligent web application that democratizes ML model selection and d
 
 #### FR-7: Cost Simulation Parameters
 **Priority**: P1 (High)  
-**Description**: Users must input cost simulation parameters
+**Description**: Users must input cost simulation parameters with flexible workload types
 
 **Acceptance Criteria**:
-- Training hours per month
-- Inference hours per day
+- Workload type selection: Both, Training-only, Inference-only
+- Training hours per month (optional based on workload type)
+- Inference hours per day (optional based on workload type)
 - Requests per second
 - Storage size (GB)
 - Data transfer (GB/month)
 - Number of environments
+- Conditional validation based on workload type
+- Dynamic form fields showing/hiding based on selection
 
-**User Story**: As a financial analyst, I want to input usage patterns so that I can get accurate cost projections.
+**User Story**: As a financial analyst, I want to input usage patterns with flexible workload types so that I can get accurate cost projections for training-only, inference-only, or combined scenarios.
+
+**Implementation Notes**:
+- Added workload type field to support different deployment scenarios
+- Training and inference fields are now optional and conditionally required
+- Form dynamically shows/hides fields based on workload type selection
 
 ### 2.2 Recommendation Generation
 
@@ -189,17 +197,27 @@ Create an intelligent web application that democratizes ML model selection and d
 
 #### FR-12: API Specification Generation
 **Priority**: P1 (High)  
-**Description**: System must generate REST API specifications
+**Description**: System must generate REST API specifications with optional API requirement
 
 **Acceptance Criteria**:
+- Optional "API Required" checkbox in form
+- API/Integration tab only visible when API is required
 - Endpoint definitions (paths, methods)
-- Request/response schemas
+- Request/response schemas with copy buttons
 - Authentication requirements
 - Rate limits
 - SLA definitions
 - Example requests/responses
+- Download API spec as JSON or YAML
+- OpenAPI 3.0 specification format
 
-**User Story**: As a backend developer, I want API specifications so that I can implement the inference service.
+**User Story**: As a backend developer, I want API specifications so that I can implement the inference service, but only when API integration is needed for my project.
+
+**Implementation Notes**:
+- Added API Required checkbox to control tab visibility
+- Implemented JSON and YAML download functionality
+- Added copy buttons to all code blocks (schemas, examples, cURL commands)
+- Organized into sub-tabs: API Specification and Code Generator
 
 #### FR-13: Cost Breakdown
 **Priority**: P0 (Critical)  
@@ -303,7 +321,7 @@ Create an intelligent web application that democratizes ML model selection and d
 
 #### FR-20: Activity Log
 **Priority**: P2 (Medium)  
-**Description**: Track user recommendation history
+**Description**: Track user recommendation history within Profile Modal
 
 **Acceptance Criteria**:
 - Log all recommendation requests
@@ -311,8 +329,18 @@ Create an intelligent web application that democratizes ML model selection and d
 - Cost estimate per request
 - Export status
 - Searchable and filterable
+- Integrated as second tab in Profile Modal
+- Activity count badge on tab
+- Prepopulated data when modal opens
+- Empty state when no activities exist
 
-**User Story**: As a user, I want to see my recommendation history so that I can compare different scenarios.
+**User Story**: As a user, I want to see my recommendation history in my profile so that I can compare different scenarios and track my past decisions.
+
+**Implementation Notes**:
+- Moved Activity tab from main dashboard to Profile Modal
+- Activity data is prepopulated from activityLog prop
+- Shows activity count badge on Activity Log tab
+- Improved user experience by consolidating profile-related features
 
 ### 2.5 User Experience
 
@@ -358,7 +386,7 @@ Create an intelligent web application that democratizes ML model selection and d
 
 #### FR-24: Form Validation
 **Priority**: P0 (Critical)  
-**Description**: Validate user inputs
+**Description**: Validate user inputs with comprehensive tooltips
 
 **Acceptance Criteria**:
 - Real-time validation
@@ -367,8 +395,104 @@ Create an intelligent web application that democratizes ML model selection and d
 - Type validation
 - Clear error messages
 - Prevent invalid submissions
+- Tooltips on all form fields explaining purpose and constraints
+- Context-specific guidance in tooltips
 
-**User Story**: As a user, I want immediate feedback on invalid inputs so that I can correct them quickly.
+**User Story**: As a user, I want immediate feedback on invalid inputs and helpful tooltips so that I can understand each field and correct errors quickly.
+
+**Implementation Notes**:
+- Added comprehensive tooltips to all form fields
+- Tooltips include field descriptions, constraints, and examples
+- Improved user experience with contextual help
+
+#### FR-25: ML Code Generator
+**Priority**: P0 (Critical)  
+**Description**: Generate complete ML workflow code for training, inference, and deployment
+
+**Acceptance Criteria**:
+- Code type selection: Training Scripts, Inference Code, Deployment Scripts, API Client, Project Setup
+- Training code includes:
+  - Complete SageMaker training scripts (train.py, launch_training.py)
+  - Model definition and architecture
+  - Data loading and preprocessing
+  - Training loop with validation
+  - Model saving and checkpointing
+- Inference code includes:
+  - SageMaker inference script (inference.py)
+  - Model loading and initialization
+  - Preprocessing pipeline
+  - Prediction logic with error handling
+- Deployment code includes:
+  - Deployment automation scripts (deploy.py)
+  - Requirements.txt with dependencies
+  - Cost estimates and configuration
+  - Endpoint creation and management
+- API client includes:
+  - Python client for calling endpoints
+  - Authentication handling
+  - Request/response examples
+- Project structure includes:
+  - Complete folder structure guide
+  - Setup instructions
+  - Workflow documentation
+  - Best practices
+- All code customized based on recommendations (model name, instance types, CV/LLM, task type)
+- Copy button for each code file
+- Professional UI with consistent green color scheme
+- Sub-tab organization within Integration tab
+
+**User Story**: As an ML engineer, I want to generate complete, ready-to-use code for my ML workflow so that I can quickly implement training, inference, and deployment without starting from scratch.
+
+**Implementation Notes**:
+- Created comprehensive mlCodeGenerator.ts utility
+- Generates production-ready code with proper error handling
+- Includes cost estimates and AWS configuration
+- Organized in professional card-based UI
+- Integrated into Integration tab with sub-tab navigation
+
+#### FR-26: Cost Calculator in Pipeline
+**Priority**: P1 (High)  
+**Description**: AWS Cost Calculator integrated into Pipeline tab
+
+**Acceptance Criteria**:
+- Cost calculator moved from Overview to Pipeline tab
+- Removed "Estimated Monthly Costs" section from Pipeline
+- Calculator appears at bottom of Pipeline tab after lane descriptions
+- Maintains all calculator functionality (accordion design, cost breakdown)
+- Consistent with overall UI design
+
+**User Story**: As a project manager, I want to see cost calculations in the Pipeline tab so that I can understand costs in the context of the ML workflow.
+
+**Implementation Notes**:
+- Moved CostCalculator component from Overview to Pipeline
+- Removed duplicate cost display from Pipeline
+- Improved information architecture by consolidating cost information
+
+#### FR-27: Tooltip System
+**Priority**: P1 (High)  
+**Description**: Comprehensive tooltip system for all form fields
+
+**Acceptance Criteria**:
+- Tooltip component with hover/focus behavior
+- Support for Input, Select, and Slider components
+- Tooltips for all form fields including:
+  - Project description
+  - Use case and task type
+  - Deployment platform
+  - Dataset characteristics (size, format, quality, resolution)
+  - Constraints (budget, latency, accuracy, memory)
+  - Cost simulation parameters
+- Context-specific guidance in each tooltip
+- Accessible keyboard navigation
+- Consistent styling across all tooltips
+
+**User Story**: As a user, I want helpful tooltips on every form field so that I understand what information is needed and why.
+
+**Implementation Notes**:
+- Created reusable Tooltip component
+- Updated Input, Select, and Slider components to support tooltips
+- Added comprehensive tooltip text for all fields
+- Improved user experience and reduced confusion
 
 ---
 
@@ -869,6 +993,15 @@ Create an intelligent web application that democratizes ML model selection and d
 - ✓ Cost estimation
 - ✓ Architecture generation
 - ✓ Firebase deployment
+- ✓ Activity log in Profile Modal
+- ✓ Optional workload types (training/inference/both)
+- ✓ Comprehensive tooltip system
+- ✓ ML code generator (training, inference, deployment, API client)
+- ✓ API specification with JSON/YAML download
+- ✓ Copy buttons for all code blocks
+- ✓ Integration tab with sub-tabs (API Specification & Code Generator)
+- ✓ Cost calculator in Pipeline tab
+- ✓ Professional UI with consistent design system
 
 ### Phase 2 (Q2 2026)
 - Backend API integration
@@ -893,7 +1026,44 @@ Create an intelligent web application that democratizes ML model selection and d
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: January 30, 2026  
-**Next Review**: April 30, 2026  
+**Document Version**: 1.2  
+**Last Updated**: February 3, 2026  
+**Next Review**: May 3, 2026  
 **Approved By**: John Sathya
+
+---
+
+## Document Changelog
+
+### Version 1.2 (February 3, 2026)
+**Major Updates**:
+- Added FR-25: ML Code Generator with complete training, inference, and deployment code generation
+- Added FR-26: Cost Calculator integration in Pipeline tab
+- Added FR-27: Comprehensive tooltip system for all form fields
+- Updated FR-7: Cost Simulation Parameters to support optional workload types (training-only, inference-only, both)
+- Updated FR-12: API Specification Generation with JSON/YAML download and copy functionality
+- Updated FR-20: Activity Log moved to Profile Modal with prepopulated data
+- Updated FR-24: Form Validation to include tooltip system
+- Updated Phase 1 roadmap with completed features
+- Enhanced implementation notes across multiple requirements
+
+**Key Features Added**:
+- ML code generator for complete workflow automation
+- Optional API requirement checkbox
+- Integration tab with sub-tabs (API Specification & Code Generator)
+- Workload type flexibility (training/inference/both)
+- Comprehensive tooltips on all form fields
+- Copy buttons for all code blocks
+- JSON/YAML API specification download
+- Activity log in Profile Modal
+- Professional UI with consistent green color scheme
+
+### Version 1.0 (January 30, 2026)
+**Initial Release**:
+- Complete functional requirements (FR-1 through FR-24)
+- Non-functional requirements
+- Technical constraints
+- User personas and use cases
+- Data requirements
+- Testing and deployment requirements
+- Initial roadmap
