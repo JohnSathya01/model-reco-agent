@@ -3,6 +3,7 @@ export interface ProjectDetails {
   useCaseType: 'CV' | 'LLM';
   taskType: 'Classification' | 'Detection' | 'Segmentation' | 'Chat' | 'Summarization' | 'Extraction' | 'RAG' | 'Reasoning';
   deploymentPlatform: 'AWS SageMaker' | 'Azure ML' | 'GCP Vertex AI' | 'On-Prem' | 'Edge Device';
+  apiRequired: boolean;
 }
 
 export interface DatasetInfo {

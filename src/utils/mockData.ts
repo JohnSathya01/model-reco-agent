@@ -637,7 +637,8 @@ export const generateMockRecommendation = (formData?: Partial<AppFormData>): Rec
     projectDetails: {
       useCaseType: 'CV',
       taskType: 'Classification',
-      deploymentPlatform: 'AWS SageMaker'
+      deploymentPlatform: 'AWS SageMaker',
+      apiRequired: true
     },
     dataset: {
       size: 5000,

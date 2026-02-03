@@ -38,11 +38,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
   const setActiveTab = onTabChange || setInternalActiveTab;
 
+  // Check if API is required
+  const isApiRequired = formData?.projectDetails?.apiRequired ?? true;
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'pipeline', label: 'Pipeline', icon: GitBranch },
     { id: 'analysis', label: 'Analysis', icon: Settings },
-    { id: 'api', label: 'API', icon: Code }
+    ...(isApiRequired ? [{ id: 'api', label: 'Integration', icon: Code }] : [])
   ];
   // Loading state
   if (loading) {
@@ -286,9 +289,13 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </div>
       )}
 
-      {activeTab === 'api' && (
+      {activeTab === 'api' && isApiRequired && (
         <div className="animate-fadeIn">
-          <APITab apiSpec={recommendations.apiSpecification} />
+          <APITab 
+            apiSpec={recommendations.apiSpecification}
+            recommendations={recommendations}
+            formData={formData!}
+          />
         </div>
       )}
     </div>

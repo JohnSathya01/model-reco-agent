@@ -23,7 +23,8 @@ const projectDetailsSchema = z.object({
   }),
   deploymentPlatform: z.enum(['AWS SageMaker', 'Azure ML', 'GCP Vertex AI', 'On-Prem', 'Edge Device'], {
     message: 'Please select a deployment platform'
-  })
+  }),
+  apiRequired: z.boolean()
 });
 
 // Dataset schema (optional for LLM)

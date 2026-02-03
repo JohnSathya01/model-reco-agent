@@ -71,6 +71,23 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               {...register('projectDetails.taskType')}
             />
           </div>
+
+          {/* API Required Checkbox */}
+          <div className="mt-4">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                {...register('projectDetails.apiRequired')}
+              />
+              <span className="text-sm font-medium text-gray-700">
+                API Required
+              </span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1 ml-7">
+              Check this if you need REST API endpoints for model inference
+            </p>
+          </div>
         </div>
       </div>
 

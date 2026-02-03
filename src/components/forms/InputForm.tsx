@@ -35,7 +35,8 @@ const InputForm: React.FC<InputFormProps> = ({
       projectDetails: {
         useCaseType: 'CV',
         taskType: 'Classification',
-        deploymentPlatform: 'AWS SageMaker'
+        deploymentPlatform: 'AWS SageMaker',
+        apiRequired: true
       },
       dataset: {
         size: 1000,
