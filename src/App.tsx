@@ -5,6 +5,7 @@ import { Layout } from './components/layout';
 import { InputForm } from './components/forms';
 import { ResultsDashboard } from './components/dashboard';
 import { AICopilot } from './components/copilot';
+import { ShareModal } from './components/collaboration';
 import { Toast } from './components/ui/Toast';
 import { useFormState, useRecommendations } from './hooks';
 import { generatePipeline } from './utils/pipelineGenerator';
@@ -23,6 +24,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Check if user came from /generate route (architect creating new architecture)
   const showBackButton = location.pathname === '/generate' && user?.role === 'solution-architect';
@@ -130,11 +132,14 @@ function App() {
           </button>
         </div>
       )}
+      
       <Layout
         showAvatar={true}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
         activityLog={activityLog}
+        showCollaboration={true}
+        onShare={() => setShowShareModal(true)}
         leftPanel={
           <div className="space-y-6">
             <InputForm 
@@ -166,6 +171,14 @@ function App() {
           </>
         }
       />
+      
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        projectName={formData?.projectDescription?.description || 'ML Recommendation Project'}
+      />
+      
       {showToast && (
         <Toast
           message={toastMessage}

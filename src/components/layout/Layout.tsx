@@ -10,6 +10,8 @@ interface LayoutProps {
   selectedModel?: string;
   onModelChange?: (model: string) => void;
   activityLog?: ActivityLogEntry[];
+  onShare?: () => void;
+  showCollaboration?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -19,16 +21,20 @@ const Layout: React.FC<LayoutProps> = ({
   className = '',
   selectedModel = 'gpt-4',
   onModelChange = () => {},
-  activityLog = []
+  activityLog = [],
+  onShare = () => {},
+  showCollaboration = false
 }) => {
   return (
     <div className={`h-screen flex flex-col bg-gray-50 overflow-hidden ${className}`}>
-      {/* Fixed Header - 64px height */}
+      {/* Fixed Header with Collaboration */}
       <Header 
         showAvatar={showAvatar} 
         selectedModel={selectedModel}
         onModelChange={onModelChange}
         activityLog={activityLog}
+        onShare={onShare}
+        showCollaboration={showCollaboration}
       />
       
       {/* Main Content Area - Full height below header */}
