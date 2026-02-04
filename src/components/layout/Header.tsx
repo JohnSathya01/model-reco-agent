@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Brain, User, Settings } from 'lucide-react';
+import { Brain, User, Settings, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ProfileModal, SettingsModal } from '../ui';
+import { useAuth } from '../../contexts/AuthContext';
 import type { ActivityLogEntry } from '../../types';
 
 interface HeaderProps {
@@ -20,6 +22,14 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <header 
       className={`h-16 flex-shrink-0 bg-white border-b border-gray-200 shadow-sm ${className}`}
@@ -54,7 +64,15 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Right side - Settings and User Avatar */}
         {showAvatar && (
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            {/* User Info */}
+            {user && (
+              <div className="hidden md:block text-right mr-2">
+                <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                <p className="text-xs text-gray-500 capitalize">{user.role.replace('-', ' ')}</p>
+              </div>
+            )}
+
             {/* Settings Button */}
             <button
               onClick={() => setIsSettingsOpen(true)}
@@ -73,6 +91,17 @@ const Header: React.FC<HeaderProps> = ({
               type="button"
             >
               <User className="w-5 h-5 text-gray-600" aria-hidden="true" />
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center w-9 h-9 bg-red-50 rounded-full hover:bg-red-100 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              aria-label="Logout"
+              type="button"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5 text-red-600" aria-hidden="true" />
             </button>
           </div>
         )}

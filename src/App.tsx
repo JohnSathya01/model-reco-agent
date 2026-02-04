@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { Layout } from './components/layout';
 import { InputForm } from './components/forms';
 import { ResultsDashboard } from './components/dashboard';
@@ -7,9 +9,13 @@ import { Toast } from './components/ui/Toast';
 import { useFormState, useRecommendations } from './hooks';
 import { generatePipeline } from './utils/pipelineGenerator';
 import { applyChanges } from './utils/copilotEngine';
+import { useAuth } from './contexts/AuthContext';
 import type { FormData as AppFormData, ActivityLogEntry, ProposedChange } from './types';
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const { formData, setFormData } = useFormState();
   const { recommendations, loading, error, generateRecommendations } = useRecommendations();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
@@ -17,6 +23,13 @@ function App() {
   const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Check if user came from /generate route (architect creating new architecture)
+  const showBackButton = location.pathname === '/generate' && user?.role === 'solution-architect';
+
+  const handleBack = () => {
+    navigate('/architect');
+  };
 
   const handleFormSubmit = async (data: AppFormData) => {
     setFormData(data);
@@ -106,6 +119,17 @@ function App() {
 
   return (
     <>
+      {showBackButton && (
+        <div className="bg-white border-b border-gray-200 px-6 py-3">
+          <button
+            onClick={handleBack}
+            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Architect Dashboard</span>
+          </button>
+        </div>
+      )}
       <Layout
         showAvatar={true}
         selectedModel={selectedModel}
