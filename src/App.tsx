@@ -29,6 +29,7 @@ function App() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
 
   // Approval workflow state
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -126,6 +127,13 @@ function App() {
     
     try {
       const result = await generateRecommendations(updatedData);
+      
+      // Auto-collapse left panel after successful generation
+      if (result) {
+        setTimeout(() => {
+          setLeftPanelCollapsed(true);
+        }, 500); // Small delay for smooth transition
+      }
       
       // Update activity log with results
       setActivityLog(prev => prev.map(activity => 
@@ -483,6 +491,8 @@ function App() {
         activityLog={activityLog}
         showCollaboration={true}
         onShare={() => setShowShareModal(true)}
+        leftPanelCollapsed={leftPanelCollapsed}
+        onLeftPanelToggle={setLeftPanelCollapsed}
         leftPanel={
           <div className="space-y-6">
             <InputForm 

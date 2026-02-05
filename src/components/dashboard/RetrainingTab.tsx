@@ -2,7 +2,7 @@ import React from 'react';
 import { RefreshCw, Database, Cpu, Cloud, TestTube } from 'lucide-react';
 
 // Environment-aware Daggr URL
-const DAGGR_URL = import.meta.env.VITE_DAGGR_URL || 'http://127.0.0.1:7863';
+const DAGGR_URL = import.meta.env.VITE_DAGGR_URL || 'http://127.0.0.1:7865';
 
 export const RetrainingTab: React.FC = () => {
   return (

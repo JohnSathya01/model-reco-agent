@@ -125,31 +125,33 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       // Show tabs with Pipeline tab available
       return (
         <div className={`space-y-6 min-h-screen ${className}`}>
-          {/* Tab Navigation */}
-          <div className="bg-white rounded-lg border border-gray-200 p-1">
-            <nav className="flex space-x-1">
-              {tabs.map((tab) => {
-                const IconComponent = tab.icon;
-                const isDisabled = tab.id !== 'pipeline';
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => !isDisabled && setActiveTab(tab.id as any)}
-                    disabled={isDisabled}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-md font-medium text-sm transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-blue-50 text-blue-700 shadow-sm'
-                        : isDisabled
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <IconComponent className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+          {/* Tab Navigation - Sticky */}
+          <div className="sticky top-0 z-20 bg-gray-50 pt-2 pb-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-1 shadow-sm">
+              <nav className="flex space-x-1">
+                {tabs.map((tab) => {
+                  const IconComponent = tab.icon;
+                  const isDisabled = tab.id !== 'pipeline';
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => !isDisabled && setActiveTab(tab.id as any)}
+                      disabled={isDisabled}
+                      className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-md font-medium text-sm transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-blue-50 text-blue-700 shadow-sm'
+                          : isDisabled
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <IconComponent className="w-4 h-4" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
 
           {/* Show Pipeline Tab */}
@@ -224,27 +226,29 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   // Results state with multi-tab interface
   return (
     <div className={`space-y-6 min-h-screen bg-gray-50 ${className}`}>
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-lg border border-gray-200 p-1">
-        <nav className="flex space-x-1">
-          {tabs.map((tab) => {
-            const IconComponent = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-md font-medium text-sm transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-blue-50 text-blue-700 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <IconComponent className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+      {/* Tab Navigation - Sticky */}
+      <div className="sticky top-0 z-20 bg-gray-50 pt-2 pb-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-1 shadow-sm">
+          <nav className="flex space-x-1">
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-md font-medium text-sm transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-blue-50 text-blue-700 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
       {/* Tab Content */}
