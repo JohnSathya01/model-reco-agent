@@ -71,7 +71,8 @@ export const AICopilot: React.FC<AICopilotProps> = ({ context, onApplyChanges, i
       pipeline: 'Pipeline Architecture',
       analysis: 'Risk & Cost Analysis',
       api: 'API Specification',
-      activity: 'Activity Log'
+      activity: 'Activity Log',
+      retraining: 'Model Retraining'
     };
     return labels[tab];
   };

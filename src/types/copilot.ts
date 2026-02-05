@@ -1,5 +1,5 @@
 // AI Copilot types
-export type TabContext = 'overview' | 'pipeline' | 'analysis' | 'api' | 'activity';
+export type TabContext = 'overview' | 'pipeline' | 'analysis' | 'api' | 'activity' | 'retraining';
 
 export interface CopilotMessage {
   id: string;

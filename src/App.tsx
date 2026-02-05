@@ -25,7 +25,7 @@ function App() {
   const { recommendations, loading, error, generateRecommendations } = useRecommendations();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4');
-  const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api' | 'retraining'>('overview');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
