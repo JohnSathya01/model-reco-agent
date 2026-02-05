@@ -10,7 +10,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import type { CostChange, CostHistoryEntry, CostEstimate } from '../../types/cost';
+import type { CostChange, CostHistoryEntry } from '../../types/cost';
 
 interface CostChangeApprovalPanelProps {
   costChange: CostChange;
@@ -32,7 +32,7 @@ export const CostChangeApprovalPanel: React.FC<CostChangeApprovalPanelProps> = (
   const [showHistory, setShowHistory] = useState(false);
   const [showComparison, setShowComparison] = useState(true);
 
-  const { baseline, current, percentageChange, requiresApproval, timestamp, changedBy } = costChange;
+  const { baseline, current, percentageChange, requiresApproval, timestamp } = costChange;
 
   // Check if user can approve (Solution Architect or Admin)
   const canApprove = currentUserRole === 'solution-architect' || currentUserRole === 'admin';
