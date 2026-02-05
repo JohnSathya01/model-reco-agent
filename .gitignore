@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.local
+.env.production
 
 # Firebase
 .firebase
@@ -28,3 +31,16 @@ ui-debug.log
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Daggr - exclude the library repo, keep only workflow files
+daggr/daggr/

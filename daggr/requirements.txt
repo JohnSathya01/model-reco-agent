@@ -1,0 +1,16 @@
+# Core dependencies for Model Retraining Workflow
+daggr>=0.1.0
+gradio>=4.0.0
+
+# Optional: For production AWS integration
+# Uncomment these when ready to implement production features
+# boto3>=1.26.0
+# sagemaker>=2.150.0
+
+# Optional: For audio processing in integrated workflow
+# pydub>=0.25.0
+
+# Optional: For advanced ML features
+# transformers>=4.30.0
+# torch>=2.0.0
+# torchvision>=0.15.0

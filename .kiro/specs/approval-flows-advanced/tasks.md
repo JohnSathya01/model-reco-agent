@@ -31,7 +31,7 @@ This implementation plan breaks down the 8 phases of advanced approval flow feat
     - **Property 4: Cost History Completeness**
     - **Validates: Requirements 1.5**
 
-- [~] 2. Implement cost calculator approval workflow
+- [ ] 2. Implement cost calculator approval workflow
   - [x] 2.1 Create cost approval UI components
     - Build `CostChangeApprovalPanel` component
     - Add visual indicator for cost changes exceeding 10%
@@ -48,7 +48,7 @@ This implementation plan breaks down the 8 phases of advanced approval flow feat
     - **Property 6: Role-Based Calculator Access Control**
     - **Validates: Requirements 2.2, 2.5, 3.2**
   
-  - [~] 2.3 Implement cost change approval actions
+  - [ ] 2.3 Implement cost change approval actions
     - Add approve/reject handlers for cost changes
     - Update baseline on approval
     - Record approval in audit log
@@ -58,13 +58,13 @@ This implementation plan breaks down the 8 phases of advanced approval flow feat
     - **Property 5: Baseline Update After Approval**
     - **Validates: Requirements 2.3**
 
-- [~] 3. Implement cost calculator locking mechanism
-  - [~] 3.1 Create CostCalculatorLockManager service
+- [ ] 3. Implement cost calculator locking mechanism
+  - [ ] 3.1 Create CostCalculatorLockManager service
     - Implement `lock()`, `unlock()`, `isLocked()`, `getLockStatus()` methods
     - Add lock status storage in Firebase
     - _Requirements: 3.1, 3.2, 3.3_
   
-  - [~] 3.2 Add automatic locking on final approval
+  - [ ] 3.2 Add automatic locking on final approval
     - Hook into final approval workflow
     - Trigger lock when approval status becomes "approved"
     - _Requirements: 3.1_
@@ -73,7 +73,7 @@ This implementation plan breaks down the 8 phases of advanced approval flow feat
     - **Property 7: Automatic Locking on Final Approval**
     - **Validates: Requirements 3.1**
   
-  - [~] 3.4 Create lock status UI components
+  - [ ] 3.4 Create lock status UI components
     - Build lock indicator badge
     - Add unlock modal for Admin users
     - Display lock status message

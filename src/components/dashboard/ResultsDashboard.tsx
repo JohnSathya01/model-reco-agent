@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, BarChart3, Settings, GitBranch, Code, Send, RefreshCw } from 'lucide-react';
+import { AlertCircle, Loader2, BarChart3, Settings, GitBranch, Code, Send, RefreshCw, Repeat } from 'lucide-react';
 import {
   RecommendedModelCard,
   AlternativesTable,
@@ -11,6 +11,7 @@ import {
 } from './index';
 import PipelineTab from './PipelineTab';
 import APITab from './APITab';
+import { RetrainingTab } from './RetrainingTab';
 import { ApprovalPanel, ApprovalStatusBadge, CostThresholdBadge } from '../approval';
 import type { RecommendationResult, FormData as AppFormData } from '../../types';
 import type { RecommendationMetadata } from '../../types/approval';
@@ -20,8 +21,8 @@ interface ResultsDashboardProps {
   formData: AppFormData | null;
   loading: boolean;
   error: string | null;
-  activeTab?: 'overview' | 'pipeline' | 'analysis' | 'api';
-  onTabChange?: (tab: 'overview' | 'pipeline' | 'analysis' | 'api') => void;
+  activeTab?: 'overview' | 'pipeline' | 'analysis' | 'api' | 'retraining';
+  onTabChange?: (tab: 'overview' | 'pipeline' | 'analysis' | 'api' | 'retraining') => void;
   className?: string;
   recommendationMetadata?: RecommendationMetadata;
   onSubmitForReview?: () => void;
@@ -46,7 +47,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   onResubmit,
   currentUserRole
 }) => {
-  const [internalActiveTab, setInternalActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
+  const [internalActiveTab, setInternalActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api' | 'retraining'>('overview');
   
   // Use external tab if provided, otherwise use internal state
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
@@ -59,7 +60,8 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'pipeline', label: 'Pipeline', icon: GitBranch },
     { id: 'analysis', label: 'Analysis', icon: Settings },
-    ...(isApiRequired ? [{ id: 'api', label: 'Integration', icon: Code }] : [])
+    ...(isApiRequired ? [{ id: 'api', label: 'Integration', icon: Code }] : []),
+    { id: 'retraining', label: 'Retraining', icon: Repeat }
   ];
   // Loading state
   if (loading) {
@@ -353,6 +355,12 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             recommendations={recommendations}
             formData={formData!}
           />
+        </div>
+      )}
+
+      {activeTab === 'retraining' && (
+        <div className="animate-fadeIn">
+          <RetrainingTab />
         </div>
       )}
     </div>
