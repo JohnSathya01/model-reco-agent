@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, BarChart3, Settings, GitBranch, Code } from 'lucide-react';
+import { AlertCircle, Loader2, BarChart3, Settings, GitBranch, Code, Send, RefreshCw } from 'lucide-react';
 import {
   RecommendedModelCard,
   AlternativesTable,
@@ -11,7 +11,9 @@ import {
 } from './index';
 import PipelineTab from './PipelineTab';
 import APITab from './APITab';
+import { ApprovalPanel, ApprovalStatusBadge, CostThresholdBadge } from '../approval';
 import type { RecommendationResult, FormData as AppFormData } from '../../types';
+import type { RecommendationMetadata } from '../../types/approval';
 
 interface ResultsDashboardProps {
   recommendations: RecommendationResult | null;
@@ -21,6 +23,12 @@ interface ResultsDashboardProps {
   activeTab?: 'overview' | 'pipeline' | 'analysis' | 'api';
   onTabChange?: (tab: 'overview' | 'pipeline' | 'analysis' | 'api') => void;
   className?: string;
+  recommendationMetadata?: RecommendationMetadata;
+  onSubmitForReview?: () => void;
+  onApprove?: (type: 'technical' | 'budget') => void;
+  onRequestChanges?: () => void;
+  onResubmit?: () => void;
+  currentUserRole?: string;
 }
 
 const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
@@ -30,7 +38,13 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   error,
   activeTab: externalActiveTab,
   onTabChange,
-  className = ''
+  className = '',
+  recommendationMetadata,
+  onSubmitForReview,
+  onApprove,
+  onRequestChanges,
+  onResubmit,
+  currentUserRole
 }) => {
   const [internalActiveTab, setInternalActiveTab] = useState<'overview' | 'pipeline' | 'analysis' | 'api'>('overview');
   
@@ -234,6 +248,49 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
+          {/* Status Badge and Submit Button */}
+          {recommendationMetadata && (
+            <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center space-x-3">
+                <h3 className="text-lg font-semibold text-gray-900">Recommendation Status</h3>
+                <ApprovalStatusBadge status={recommendationMetadata.status} size="md" />
+                {recommendationMetadata.estimatedCost && recommendationMetadata.estimatedCost !== '$0' && (
+                  <CostThresholdBadge cost={recommendationMetadata.estimatedCost} />
+                )}
+              </div>
+              {recommendationMetadata.status === 'draft' && onSubmitForReview && (
+                <button
+                  onClick={onSubmitForReview}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Submit for Review</span>
+                </button>
+              )}
+              {recommendationMetadata.status === 'changes_requested' && onResubmit && (
+                <button
+                  onClick={onResubmit}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Resubmit for Review</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Approval Panel */}
+          {recommendationMetadata && (recommendationMetadata.status !== 'draft' || recommendationMetadata.approvals.technical || recommendationMetadata.approvals.budget) && (
+            <div className="animate-fadeIn">
+              <ApprovalPanel
+                metadata={recommendationMetadata}
+                onApprove={onApprove}
+                onRequestChanges={onRequestChanges}
+                currentUserRole={currentUserRole}
+              />
+            </div>
+          )}
+
           {/* Recommended Model Card */}
           <div className="animate-fadeIn">
             <RecommendedModelCard model={recommendations.recommendedModel} />

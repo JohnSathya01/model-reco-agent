@@ -2,6 +2,9 @@
 export * from './forms';
 export * from './recommendations';
 export * from './copilot';
+export * from './approval';
+export * from './notification';
+export * from './cost';
 
 // UI component prop types
 export interface BaseComponentProps {

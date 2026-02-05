@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Settings, BarChart3, FileText, TrendingUp, Shield, Database, Activity, Upload, LogOut } from 'lucide-react';
+import { Users, Settings, BarChart3, FileText, TrendingUp, Shield, Activity, Upload, LogOut, DollarSign, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import EditUserModal from '../components/ui/EditUserModal';
@@ -21,6 +21,42 @@ const AdminDashboard: React.FC = () => {
   ]);
 
   // Mock data
+  const pendingBudgetApprovals = [
+    {
+      id: 'rec-001',
+      title: 'Customer Support Chatbot',
+      submittedBy: 'Jane Smith',
+      approvedBy: 'Sarah Chen (Solution Architect)',
+      estimatedCost: '$12,450/month',
+      technicalApprovedAt: '1 hour ago',
+      priority: 'high',
+      type: 'LLM',
+      costLevel: 'medium',
+    },
+    {
+      id: 'rec-002',
+      title: 'Image Classification Model',
+      submittedBy: 'John Doe',
+      approvedBy: 'Sarah Chen (Solution Architect)',
+      estimatedCost: '$8,500/month',
+      technicalApprovedAt: '3 hours ago',
+      priority: 'high',
+      type: 'Computer Vision',
+      costLevel: 'medium',
+    },
+    {
+      id: 'rec-003',
+      title: 'Real-time Analytics Pipeline',
+      submittedBy: 'Mike Johnson',
+      approvedBy: 'Tom Wilson (Solution Architect)',
+      estimatedCost: '$15,800/month',
+      technicalApprovedAt: '5 hours ago',
+      priority: 'medium',
+      type: 'Data Processing',
+      costLevel: 'high',
+    },
+  ];
+
   const stats = {
     totalUsers: 24,
     activeProjects: 18,
@@ -76,6 +112,25 @@ const AdminDashboard: React.FC = () => {
     navigate('/login');
   };
 
+  const handleReviewBudget = (recId: string) => {
+    // Navigate to the recommendation for budget review
+    console.log('Review budget:', recId);
+    navigate('/generate'); // In production, would navigate to specific recommendation
+  };
+
+  const getCostLevelColor = (level: string) => {
+    switch (level) {
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'high':
+        return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'critical':
+        return 'bg-red-100 text-red-700 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -129,8 +184,111 @@ const AdminDashboard: React.FC = () => {
       <div className="p-6">
         {activeSection === 'overview' && (
           <div className="space-y-6">
+            {/* Pending Budget Approvals - Priority Section */}
+            {pendingBudgetApprovals.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <h2 className="text-lg font-semibold text-gray-900">Pending Budget Approvals</h2>
+                    <span className="px-2.5 py-0.5 bg-red-100 text-red-700 text-sm font-medium rounded-full">
+                      {pendingBudgetApprovals.length} waiting
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg p-6">
+                  <div className="space-y-4">
+                    {pendingBudgetApprovals.map((approval) => (
+                      <div 
+                        key={approval.id}
+                        className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">{approval.title}</h3>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getCostLevelColor(approval.costLevel)}`}>
+                                {approval.estimatedCost}
+                              </span>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded ${
+                                approval.priority === 'high' 
+                                  ? 'bg-red-100 text-red-700' 
+                                  : 'bg-orange-100 text-orange-700'
+                              }`}>
+                                {approval.priority.toUpperCase()} PRIORITY
+                              </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                              <div>
+                                <span className="text-gray-600">Created by:</span>
+                                <p className="font-medium text-gray-900">{approval.submittedBy}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Type:</span>
+                                <p className="font-medium text-gray-900">{approval.type}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Technical Approval:</span>
+                                <p className="font-medium text-green-600">✓ {approval.approvedBy}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Approved:</span>
+                                <p className="font-medium text-gray-900">{approval.technicalApprovedAt}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2 text-sm">
+                              <AlertCircle className="w-4 h-4 text-purple-600" />
+                              <span className="text-purple-700 font-medium">
+                                Budget approval required as Specialisation Head
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleReviewBudget(approval.id)}
+                            className="ml-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap"
+                          >
+                            Review Budget
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-purple-200">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2 text-purple-700">
+                        <DollarSign className="w-4 h-4" />
+                        <span className="font-medium">Action Required: Review and approve budgets</span>
+                      </div>
+                      <span className="text-purple-600 text-xs">
+                        {pendingBudgetApprovals.length} pending approval{pendingBudgetApprovals.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Pending Budget Approvals</p>
+                    <p className="text-3xl font-bold text-purple-600 mt-2">{pendingBudgetApprovals.length}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-purple-600" />
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-purple-600 font-medium">
+                  Action required
+                </div>
+              </div>
+
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -155,19 +313,6 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-xs text-green-600 mt-4">↑ 8% from last month</p>
-              </div>
-
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Recommendations</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalRecommendations}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Database className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-                <p className="text-xs text-green-600 mt-4">↑ 24% from last month</p>
               </div>
 
               <div className="bg-white rounded-lg border border-gray-200 p-6">

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Brain, User, Settings, LogOut, Share2, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ProfileModal, SettingsModal } from '../ui';
+import { ProfileModal, SettingsModal, NotificationBell } from '../ui';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ActivityLogEntry } from '../../types';
+import type { Notification } from '../../types/notification';
 
 interface HeaderProps {
   showAvatar?: boolean;
@@ -34,6 +35,7 @@ const Header: React.FC<HeaderProps> = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showCollaborators, setShowCollaborators] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -47,6 +49,23 @@ const Header: React.FC<HeaderProps> = ({
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleAvatarClick = (avatarId: string) => {
+    if (selectedAvatar === avatarId) {
+      // If clicking the same avatar, close the dropdown
+      setSelectedAvatar(null);
+      setShowCollaborators(false);
+    } else {
+      // Select new avatar and show dropdown
+      setSelectedAvatar(avatarId);
+      setShowCollaborators(true);
+    }
+  };
+
+  const handleClickOutside = () => {
+    setSelectedAvatar(null);
+    setShowCollaborators(false);
   };
 
   return (
@@ -93,6 +112,20 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             )}
 
+            {/* Notification Bell */}
+            {user && (
+              <NotificationBell 
+                userId={user.email}
+                onNotificationClick={(notification: Notification) => {
+                  console.log('Notification clicked:', notification);
+                  // Navigate to the recommendation if needed
+                  if (notification.actionUrl) {
+                    navigate(notification.actionUrl);
+                  }
+                }}
+              />
+            )}
+
             {/* Settings Button */}
             <button
               onClick={() => setIsSettingsOpen(true)}
@@ -136,11 +169,14 @@ const Header: React.FC<HeaderProps> = ({
               <div
                 key={collaborator.id}
                 className="relative group"
-                onMouseEnter={() => setShowCollaborators(true)}
-                onMouseLeave={() => setShowCollaborators(false)}
               >
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-white cursor-pointer transition-transform hover:scale-110 hover:z-10"
+                  onClick={() => handleAvatarClick(collaborator.id)}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 cursor-pointer transition-all ${
+                    selectedAvatar === collaborator.id
+                      ? 'border-blue-500 ring-2 ring-blue-300 ring-offset-1 scale-110 z-20'
+                      : 'border-white hover:scale-110 hover:z-10'
+                  }`}
                   style={{ backgroundColor: collaborator.color }}
                   title={collaborator.name}
                 >
@@ -158,8 +194,12 @@ const Header: React.FC<HeaderProps> = ({
             ))}
             {collaborators.length > 3 && (
               <div
-                className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-semibold border-2 border-white cursor-pointer"
-                onMouseEnter={() => setShowCollaborators(true)}
+                onClick={() => handleAvatarClick('more')}
+                className={`w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-semibold border-2 cursor-pointer transition-all ${
+                  selectedAvatar === 'more'
+                    ? 'border-blue-500 ring-2 ring-blue-300 ring-offset-1 scale-110'
+                    : 'border-white hover:scale-110'
+                }`}
               >
                 +{collaborators.length - 3}
               </div>
@@ -183,57 +223,62 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* Collaborators Dropdown */}
           {showCollaborators && (
-            <div
-              className="absolute right-6 top-[104px] w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
-              onMouseEnter={() => setShowCollaborators(true)}
-              onMouseLeave={() => setShowCollaborators(false)}
-            >
-              <div className="p-3">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Active Now</h3>
-                  <div className="flex items-center space-x-1 text-xs text-gray-600">
-                    <Users className="w-3 h-3" />
-                    <span>{collaborators.length}</span>
+            <>
+              {/* Backdrop to close dropdown */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={handleClickOutside}
+              />
+              <div
+                className="absolute right-6 top-[104px] w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+              >
+                <div className="p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900">Active Now</h3>
+                    <div className="flex items-center space-x-1 text-xs text-gray-600">
+                      <Users className="w-3 h-3" />
+                      <span>{collaborators.length}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {collaborators.map((collaborator) => (
+                      <div
+                        key={collaborator.id}
+                        className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50"
+                      >
+                        <div className="relative flex-shrink-0">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                            style={{ backgroundColor: collaborator.color }}
+                          >
+                            {collaborator.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div
+                            className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white ${
+                              collaborator.status === 'editing' ? 'bg-green-500' : 'bg-blue-500'
+                            }`}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{collaborator.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {collaborator.status === 'editing' ? 'Editing' : 'Viewing'}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  {collaborators.map((collaborator) => (
-                    <div
-                      key={collaborator.id}
-                      className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50"
-                    >
-                      <div className="relative flex-shrink-0">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
-                          style={{ backgroundColor: collaborator.color }}
-                        >
-                          {collaborator.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div
-                          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white ${
-                            collaborator.status === 'editing' ? 'bg-green-500' : 'bg-blue-500'
-                          }`}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{collaborator.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {collaborator.status === 'editing' ? 'Editing' : 'Viewing'}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="border-t border-gray-200 px-3 py-2 bg-gray-50 rounded-b-lg">
+                  <button
+                    onClick={onShare}
+                    className="w-full text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Invite more people
+                  </button>
                 </div>
               </div>
-              <div className="border-t border-gray-200 px-3 py-2 bg-gray-50 rounded-b-lg">
-                <button
-                  onClick={onShare}
-                  className="w-full text-xs text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Invite more people
-                </button>
-              </div>
-            </div>
+            </>
           )}
         </div>
       )}

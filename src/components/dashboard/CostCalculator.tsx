@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, ChevronDown, ChevronUp, TrendingDown } from 'lucide-react';
+import { Calculator, ChevronDown, ChevronUp, TrendingDown, Lock, Info } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface CostCalculatorProps {
   className?: string;
+  isLocked?: boolean;
+  lockStatus?: {
+    isLocked: boolean;
+    lockedAt?: Date;
+    lockedBy?: string;
+  };
 }
 
 interface ServiceCosts {
@@ -17,7 +24,49 @@ interface ServiceCosts {
   total: number;
 }
 
-export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }) => {
+export const CostCalculator: React.FC<CostCalculatorProps> = ({ 
+  className = '', 
+  isLocked = false,
+  lockStatus 
+}) => {
+  const { user } = useAuth();
+  
+  // Determine if user can edit based on role and lock status
+  const canEdit = React.useMemo(() => {
+    if (!user) return false;
+    
+    // Admin can always edit (even when locked, they can unlock)
+    if (user.role === 'admin') return true;
+    
+    // If locked, only admin can edit
+    if (isLocked || lockStatus?.isLocked) return false;
+    
+    // Solution Architect can edit when not locked
+    if (user.role === 'solution-architect') return true;
+    
+    // All other roles cannot edit
+    return false;
+  }, [user, isLocked, lockStatus]);
+
+  // Determine the reason for read-only mode
+  const readOnlyReason = React.useMemo(() => {
+    if (!user) return 'You must be logged in to edit';
+    
+    if (isLocked || lockStatus?.isLocked) {
+      const lockedBy = lockStatus?.lockedBy || 'an administrator';
+      const lockedAt = lockStatus?.lockedAt 
+        ? new Date(lockStatus.lockedAt).toLocaleDateString() 
+        : 'previously';
+      return `This cost calculator is locked (locked by ${lockedBy} on ${lockedAt}). Only administrators can unlock it.`;
+    }
+    
+    if (user.role !== 'admin' && user.role !== 'solution-architect') {
+      return 'Only Solution Architects and Administrators can edit the cost calculator.';
+    }
+    
+    return '';
+  }, [user, isLocked, lockStatus]);
+
   // Accordion state
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['sagemaker']));
 
@@ -208,16 +257,66 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
     <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Calculator className="w-5 h-5 text-blue-600" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Calculator className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">AWS Cost Calculator</h3>
+              <p className="text-sm text-gray-600">Adjust parameters to estimate your monthly costs</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">AWS Cost Calculator</h3>
-            <p className="text-sm text-gray-600">Adjust parameters to estimate your monthly costs</p>
-          </div>
+          
+          {/* Lock indicator and permission info */}
+          {!canEdit && (
+            <div className="flex items-center space-x-2 group relative">
+              <Lock className="w-5 h-5 text-gray-400" />
+              <span className="text-sm font-medium text-gray-500">Read Only</span>
+              <Info className="w-4 h-4 text-gray-400 cursor-help" />
+              
+              {/* Tooltip */}
+              <div className="absolute right-0 top-full mt-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-lg">
+                <div className="font-semibold mb-1">Why is this read-only?</div>
+                <div>{readOnlyReason}</div>
+                {user && (user.role === 'project-manager' || user.role === 'viewer' || user.role === 'engineer') && (
+                  <div className="mt-2 pt-2 border-t border-gray-700">
+                    <div className="font-semibold mb-1">Who can edit?</div>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Solution Architects (when unlocked)</li>
+                      <li>Administrators (always)</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {canEdit && user?.role === 'solution-architect' && (
+            <div className="flex items-center space-x-2 text-green-600">
+              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+              <span className="text-sm font-medium">You can edit</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Read-only banner */}
+      {!canEdit && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
+          <div className="flex items-start space-x-3">
+            <Lock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-yellow-900">
+                {isLocked || lockStatus?.isLocked ? 'Cost Calculator Locked' : 'View Only Mode'}
+              </p>
+              <p className="text-sm text-yellow-700 mt-1">
+                {readOnlyReason}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="p-6 space-y-4">
         {/* SageMaker Section */}
@@ -240,7 +339,10 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                   };
                   setTrainingHourlyCost(costs[e.target.value]);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                disabled={!canEdit}
+                className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm ${
+                  !canEdit ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+                }`}
               >
                 <option value="ml.p3.2xlarge">ml.p3.2xlarge (V100) - $3.06/hr</option>
                 <option value="ml.g5.2xlarge">ml.g5.2xlarge (A10G) - $1.52/hr</option>
@@ -260,7 +362,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="10"
                 value={trainingHours}
                 onChange={(e) => setTrainingHours(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -270,9 +373,10 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 id="spot"
                 checked={useSpotTraining}
                 onChange={(e) => setUseSpotTraining(e.target.checked)}
-                className="w-4 h-4 text-green-600 rounded"
+                disabled={!canEdit}
+                className={`w-4 h-4 text-green-600 rounded ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
-              <label htmlFor="spot" className="text-sm text-gray-700">
+              <label htmlFor="spot" className={`text-sm text-gray-700 ${!canEdit ? 'opacity-60' : ''}`}>
                 Use Spot Instances (70% savings)
               </label>
             </div>
@@ -294,7 +398,10 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                   };
                   setInferenceHourlyCost(costs[e.target.value]);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                disabled={!canEdit}
+                className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm ${
+                  !canEdit ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+                }`}
               >
                 <option value="ml.m5.xlarge">ml.m5.xlarge - $0.27/hr</option>
                 <option value="ml.m5.2xlarge">ml.m5.2xlarge - $0.54/hr</option>
@@ -313,7 +420,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 max="24"
                 value={inferenceHoursPerDay}
                 onChange={(e) => setInferenceHoursPerDay(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -338,7 +446,10 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                   };
                   setEc2HourlyCost(costs[e.target.value]);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                disabled={!canEdit}
+                className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm ${
+                  !canEdit ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+                }`}
               >
                 <option value="t3.medium">t3.medium - $0.04/hr</option>
                 <option value="t3.large">t3.large - $0.08/hr</option>
@@ -357,7 +468,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 max="10"
                 value={ec2Instances}
                 onChange={(e) => setEc2Instances(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -371,7 +483,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 max="24"
                 value={ec2HoursPerDay}
                 onChange={(e) => setEc2HoursPerDay(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -390,7 +503,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 max="20"
                 value={ecsTaskCount}
                 onChange={(e) => setEcsTaskCount(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -405,7 +519,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="0.25"
                 value={ecsCpu}
                 onChange={(e) => setEcsCpu(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -420,7 +535,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="0.5"
                 value={ecsMemory}
                 onChange={(e) => setEcsMemory(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -434,7 +550,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 max="24"
                 value={ecsHoursPerDay}
                 onChange={(e) => setEcsHoursPerDay(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -454,7 +571,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="10"
                 value={s3StorageGB}
                 onChange={(e) => setS3StorageGB(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -469,7 +587,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="1000"
                 value={s3RequestsPerMonth}
                 onChange={(e) => setS3RequestsPerMonth(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -489,7 +608,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="100000"
                 value={apiRequests}
                 onChange={(e) => setApiRequests(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -499,9 +619,10 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 id="apiCache"
                 checked={apiCacheEnabled}
                 onChange={(e) => setApiCacheEnabled(e.target.checked)}
-                className="w-4 h-4 text-blue-600 rounded"
+                disabled={!canEdit}
+                className={`w-4 h-4 text-blue-600 rounded ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
-              <label htmlFor="apiCache" className="text-sm text-gray-700">
+              <label htmlFor="apiCache" className={`text-sm text-gray-700 ${!canEdit ? 'opacity-60' : ''}`}>
                 Enable Caching (0.5GB)
               </label>
             </div>
@@ -522,7 +643,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="10000"
                 value={lambdaInvocations}
                 onChange={(e) => setLambdaInvocations(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -537,7 +659,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="64"
                 value={lambdaMemoryMB}
                 onChange={(e) => setLambdaMemoryMB(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -552,7 +675,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="50"
                 value={lambdaAvgDurationMs}
                 onChange={(e) => setLambdaAvgDurationMs(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -572,7 +696,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="10"
                 value={cloudwatchMetrics}
                 onChange={(e) => setCloudwatchMetrics(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -587,7 +712,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="5"
                 value={cloudwatchLogs}
                 onChange={(e) => setCloudwatchLogs(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
           </div>
@@ -607,7 +733,8 @@ export const CostCalculator: React.FC<CostCalculatorProps> = ({ className = '' }
                 step="10"
                 value={dataTransferGB}
                 onChange={(e) => setDataTransferGB(Number(e.target.value))}
-                className="w-full"
+                disabled={!canEdit}
+                className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
             <p className="text-xs text-gray-500">First 1 GB/month is free, then $0.09/GB</p>
